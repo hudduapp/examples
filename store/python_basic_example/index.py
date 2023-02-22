@@ -8,8 +8,7 @@ from huddu import Store
 ###
 
 
-store = Store(
-    "Authorization=Token RkpwPBRhONdGm3ihWyWlzT2uK0nucHAv73xq5sjoEzo92rQMqXWjeUDmo51nwmqU,X-Space=spc_3c9338e3-ac51-404d-91f6-6a18cdab5836,X-Region=us-central-1")
+store = Store("<paste_your_store_token_here>")  # Check https://huddu.io/docs/Store-SDK for more information
 
 
 def calc_pi(decimal_places):
