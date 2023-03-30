@@ -10,8 +10,8 @@ import { Queue } from "huddu-node";
 */
 
 let queue = new Queue(
-    "9c98635a-2357-430a-8d58-0ffa38361b7e",
-    "660ff6f4d062fa1badaa505def5ccf3da651356a252b905c85cf036254e89361"
+    "<your_client_id>",
+    "<your_client_secret>"
 );
 
 function send_mail(email, login) {
@@ -28,6 +28,7 @@ let generator = await queue.pullAll("signups");
 let nextElement = await generator.next()
 
 while (!nextElement.done) {
+    console.log(nextElement);
     try {
         send_mail(nextElement.value.email, nextElement.value.login);
 
