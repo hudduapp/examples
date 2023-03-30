@@ -1,0 +1,14 @@
+{
+  "name": "node_basic_example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.mjs"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "huddu-node": "^1.1.9"
+  }
+}
