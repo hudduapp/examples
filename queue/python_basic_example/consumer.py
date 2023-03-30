@@ -1,42 +1,33 @@
-from math import acos
-
-from huddu import Store
+from huddu import Queue
 
 """
-    Create a new store on the dashboard at https://huddu.io/login?next=/app/store
-    In this example we will calculate pi; store it + a radius r and then access it again to calculate the area of a circle.
+    PART 2: The consumer
+
+    Setting: A user just signed up for your service. Now you'd like to push an event to a queue which is later read by your email service that sends a verification mail out to new users
 """
 
-store = Store(
+queue = Queue(
     client_id="<your_client_id>",
-    client_secret="<your_client_secret>"
-)  # Check https://huddu.io/docs/Store-SDK for more information
+    client_secret="<your_client_secret>",
+)  # Check https://huddu.io/docs/Queue-SDK for more information
 
 
-def calc_pi(decimal_places):
-    return round(2 * acos(0.0), decimal_places)
+def send_mail(email: str, login: str):
+    # your login
+    print(f"sent an email to {login}")
 
 
-# Store pi and r in a store
-store.put("pi", calc_pi(3))
-store.put("r", 100)
+# on the consumer we'll periodically read over all new entries.
 
-# update key "pi"
-store.update("pi", calc_pi(5))
+for i in queue.pull_all("signups"):
+    try:
+        send_mail(i["email"], i["login"])
 
-
-# on a different device with internet access...
-def calc_circle(pi, r):
-    return pi * r ** 2
-
-
-# Retrieve our values using the keys we used before
-pi = store.get("pi")
-r = store.get("r")
-
-print("the area of the circle is:")
-print(calc_circle(pi, r))
-
-# Removing the key/value pairs using the respective keys
-store.delete("pi")
-store.delete("r")
+        # acknowledge event(and thus delete it) if the mail was successfully sent.
+        queue.acknowledge("signups", i["_id"])
+    except Exception as e:
+        print("an error occoured: ")
+        # retry this mail if something went wrong.
+        # IMPORTANT: like this the email would be retried infinitely. Ideally you'd only retry it maybe 5 times (or less/more; up to you)
+        # to achieve that simply acknowledge failed events and store them again with the event being modified to reflect that it was already retried x times.
+        print(e)

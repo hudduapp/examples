@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "huddu-node": "^1.1.9"
+    "huddu-node": "^1.1.10"
   }
 }

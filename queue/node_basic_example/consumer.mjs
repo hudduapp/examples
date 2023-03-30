@@ -1,55 +1,45 @@
-import { Store } from "huddu-node"
-//or import using require: let Store = require("huddu-node").Store
+import { Queue } from "huddu-node";
+//or import using require: let Queue = require("huddu-node").Queue
+
+/*
+    PART 1: The producer
+    
+    Create a new queue on the dashboard at https://huddu.io/login?next=/app/store Setting: A user just signed up for 
+    your service.Now you'd like to push an event to a queue which is later read by your email service that sends a 
+    verification mail out to new users
+*/
+
+let queue = new Queue(
+    "9c98635a-2357-430a-8d58-0ffa38361b7e",
+    "660ff6f4d062fa1badaa505def5ccf3da651356a252b905c85cf036254e89361"
+);
+
+function send_mail(email, login) {
+    // your login
+    console.log(`sent an email to ${login}`);
+}
+
+// on the consumer we'll periodically read over all new entries.
+
+let generator = await queue.pullAll("signups");
 
 
 
+let nextElement = await generator.next()
 
-let store = new Store(
-    "<your_client_id>",
-    "<your_client_secret>"
-)
+while (!nextElement.done) {
+    try {
+        send_mail(nextElement.value.email, nextElement.value.login);
 
+        // acknowledge event(and thus delete it) if the mail was successfully sent.
+        //queue.acknowledge("signups", nextElement.value._id);
+    } catch (error) {
+        console.log("an error occoured: ");
+        // retry this mail if something went wrong.
+        // IMPORTANT: like this the email would be retried infinitely.Ideally you'd only retry it maybe 5 times (or less/more; up to you)
+        // to achieve that simply acknowledge failed events and store them again with the event being modified to reflect that it was already retried x times.
+        console.log(error);
+    }
 
-// Create a new store on the dashboard at https://huddu.io/login?next=/app/store
-// In this example we will calculate pi; store it + a radius r and then access it again to calculate the area of a circle.
-
-
-
-// Let's calculate the area of a cube that's defined by two edges called "a" and "b" on a remote machine
-
-// Store "a" and "b"
-// Note: Running this the second time on one store? .put will throw an exception if an element with the same name is already set. use safe=false if you want to get around this behaviour
-
-await store.put(
-    "a",
-    10
-)
-
-await store.put(
-    "b",
-    20
-)
-
-
-// oops... I got a wrong.. let's update it
-await store.update(
-    "a",
-    30
-)
-
-
-// On a remote machine with internet access
-let a = await store.get("a")
-let b = await store.get("b")
-
-
-let area = a * b
-console.log("The area of the rectangle is: " + area + " (Entities)")
-
-
-
-// let's clean up:
-await store.delete("a")
-await store.delete("b")
-
-
+    nextElement = await generator.next()
+}
